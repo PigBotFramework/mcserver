@@ -1,7 +1,9 @@
 import requests, time, random, urllib, json, traceback, re, websocket
-from hypixelapi import HypixelAPI, HypixelError, PlayerNotFoundError
-from mcstatus import JavaServer, BedrockServer
 from pbf import PBF
+from statement.FaceStatement import FaceStatement
+from statement.TextStatement import TextStatement
+from statement import Statement
+from statement.ImageStatement import ImageStatement
 from utils.RegCmd import RegCmd
 
 _name = "MC服务器"
@@ -82,16 +84,6 @@ class mcserver(PBF):
                 mode = "MC服务器",
                 hidden = 1,
                 type = "message"
-            ),
-            RegCmd(
-                name = "hyp ",
-                usage = "hyp <Username>",
-                permission = "anyone",
-                function = "mcserver@hyp",
-                description = "查询Hypixel信息",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
             ),
             RegCmd(
                 name = "加MC服务器指令",
@@ -295,30 +287,33 @@ class mcserver(PBF):
         datajson = dataa.json()
         
     def getStatus(self):
-        if ":" not in self.data.message:
-            return self.client.msg().raw("请指定端口！！！")
-        server = JavaServer.lookup(self.data.message)
-        try:
-            status = server.query()
-            self.client.msg().raw(f"类型: Java版\n主机名: {status.raw.get('hostname')}\n主机地址: {status.raw.get('hostip')}\n插件: {status.raw.get('plugins')}\n玩家总数: {status.raw.get('numplayers')}\n游戏类型: {status.raw.get('gametype')}\n最大玩家数: {status.raw.get('maxplayers')}\n主机端口: {status.raw.get('hostport')}\n版本: {status.raw.get('version')}\n地图: {status.raw.get('map')}\n游戏ID: {status.raw.get('game_id')}\nMOTD: {status.motd}\n在线玩家: {', '.join(status.players.names)}")
-        except Exception as e:
-            server = BedrockServer.lookup(self.data.message)
-            try:
-                status = server.status()
-                self.client.msg().raw(f"类型: 基岩版\n服务器内核: {status.version.brand}\nProtocol: {status.version.protocol}\n版本: {status.version.version}\n在线玩家: {status.players_online}个\n最多玩家: {status.players_max}个\n游戏模式: {status.gamemode}\n地图: {status.map}\n延迟: {status.latency}ms\nMOTD: {status.motd}")
-            except Exception as e:
-                self.client.msg().raw('无法进行查询，请检查服务器是否开启！\n错误详细信息：{0}'.format(e))
+        ip = self.data.message.split(':')
+        port = 25565 if ':' not in self.data.message else ip[1]
+        ip = ip[0]
         
-        # try:
-        #     if ":" not in self.data.message:
-        #         return self.client.msg().raw("请指定端口！！！")
-        #     url ="http://api.tangdouz.com/mc.php?ip={}&dk={}".format(self.data.message.split(":")[0], self.data.message.split(":")[1])
-        #     self.client.msg().raw(url)
-        #     header = {"User-Agent":"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; AcooBrowser; .NET CLR 1.1.4322; .NET CLR 2.0.50727)"}
-        #     self.client.msg().raw(requests.get(url).content,timeout=None,headers=header)
-        # except Exception as e:
-        #     self.client.msg().raw('无法进行查询，请检查服务器是否开启！\n错误详细信息：{0}'.format(e))
-    
+        data = requests.get(f'https://mcapi.us/server/status?ip={ip}&port={port}').json()
+        if data.get('status') == 'success':
+            if len(data.get('players').get('sample')) < 10:
+                players = ''
+                for i in data.get('players').get('sample'):
+                    players += f"\n    {i.get('name')}"
+            else:
+                players = '\n    玩家数量过多，无法显示全部'
+            self.client.msg(
+                Statement('reply', id=self.data.se.get('message_id')),
+                ImageStatement(f'https://mcapi.us/server/image?ip={ip}&port={port}'),
+                FaceStatement(54), TextStatement(self.data.message, 1),
+                FaceStatement(54), TextStatement(f'MOTD：{data.get("motd")}', 1),
+                FaceStatement(54), TextStatement(f'在线玩家数：{data.get("players").get("now")}/{data.get("players").get("max")}', 1),
+                FaceStatement(54), TextStatement(f'在线玩家：{players}', 1),
+                FaceStatement(54), TextStatement(f'服务器版本：{data.get("server").get("protocol")}')
+            ).send()
+        else:
+            self.client.msg(
+                Statement('reply', id=self.data.se.get('message_id')),
+                FaceStatement(54), TextStatement('获取失败！')
+            ).send()
+        
     def syncMessage(self):
         # MC消息同步
         try:
