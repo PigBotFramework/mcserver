@@ -1,10 +1,16 @@
-import requests, time, random, urllib, json, traceback, re, websocket
-from pbf import PBF
-from statement.FaceStatement import FaceStatement
-from statement.TextStatement import TextStatement
-from statement import Statement
-from statement.ImageStatement import ImageStatement
-from utils.RegCmd import RegCmd
+import requests, time, random, urllib, json, traceback, re
+try:
+    import websocket
+except ImportError:
+    import pip
+    pip._internal.cli.main.main(['install', "websocket"])
+    import websocket
+from pbf.controller.PBF import PBF
+from pbf.statement.FaceStatement import FaceStatement
+from pbf.statement.TextStatement import TextStatement
+from pbf.statement import Statement
+from pbf.statement.ImageStatement import ImageStatement
+from pbf.utils.RegCmd import RegCmd
 
 _name = "MC服务器"
 _version = "1.0.1"
@@ -15,106 +21,86 @@ _cost = 0.00
 class mcserver(PBF):
     def __enter__(self):
         return [
-            RegCmd(
-                name = "/",
-                usage = "/<指令内容>",
-                permission = "ao",
-                function = "mcserver@command",
-                description = "在服务器里执行指令",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "服务器状态",
-                usage = "服务器状态",
-                permission = "anyone",
-                function = "mcserver@state",
-                description = "服务器状态",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "启动服务器",
-                usage = "启动服务器",
-                permission = "ao",
-                function = "mcserver@start",
-                description = "开启服务器",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "关闭服务器",
-                usage = "关闭服务器",
-                permission = "ao",
-                function = "mcserver@stop",
-                description = "关闭服务器",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "面板数据",
-                usage = "面板数据",
-                permission = "ao",
-                function = "mcserver@overview",
-                description = "MCSM面板数据",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "获取状态 ",
-                usage = "获取状态 <IP>:<端口>",
-                permission = "anyone",
-                function = "mcserver@getStatus",
-                description = "获取指定服务器的状态",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "MC服务器消息同步",
-                usage = "",
-                permission = "anyone",
-                function = "mcserver@syncMessage",
-                description = "MC服务器消息同步",
-                mode = "MC服务器",
-                hidden = 1,
-                type = "message"
-            ),
-            RegCmd(
-                name = "加MC服务器指令",
-                usage = "加MC服务器指令",
-                permission = "ao",
-                function = "mcserver@addMCCmd",
-                description = "加MC服务器指令",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "MC服务器指令",
-                usage = "MC服务器指令",
-                permission = "ao",
-                function = "mcserver@listMCCmd",
-                description = "列出所有MC服务器指令",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            ),
-            RegCmd(
-                name = "删MC服务器指令",
-                usage = "删MC服务器指令 <群中指令名>",
-                permission = "ao",
-                function = "mcserver@delMCCmd",
-                description = "删MC服务器指令",
-                mode = "MC服务器",
-                hidden = 0,
-                type = "command"
-            )
+    @RegCmd(
+        name = "/",
+        usage = "/<指令内容>",
+        permission = "ao",
+        function = "mcserver@command",
+        description = "在服务器里执行指令",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "服务器状态",
+        usage = "服务器状态",
+        permission = "anyone",
+        function = "mcserver@state",
+        description = "服务器状态",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "启动服务器",
+        usage = "启动服务器",
+        permission = "ao",
+        function = "mcserver@start",
+        description = "开启服务器",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "关闭服务器",
+        usage = "关闭服务器",
+        permission = "ao",
+        function = "mcserver@stop",
+        description = "关闭服务器",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "面板数据",
+        usage = "面板数据",
+        permission = "ao",
+        function = "mcserver@overview",
+        description = "MCSM面板数据",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "获取状态 ",
+        usage = "获取状态 <IP>:<端口>",
+        permission = "anyone",
+        function = "mcserver@getStatus",
+        description = "获取指定服务器的状态",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "MC服务器消息同步",
+        usage = "",
+        permission = "anyone",
+        function = "mcserver@syncMessage",
+        description = "MC服务器消息同步",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "加MC服务器指令",
+        usage = "加MC服务器指令",
+        permission = "ao",
+        function = "mcserver@addMCCmd",
+        description = "加MC服务器指令",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "MC服务器指令",
+        usage = "MC服务器指令",
+        permission = "ao",
+        function = "mcserver@listMCCmd",
+        description = "列出所有MC服务器指令",
+        mode = "MC服务器"
+    )
+    @RegCmd(
+        name = "删MC服务器指令",
+        usage = "删MC服务器指令 <群中指令名>",
+        permission = "ao",
+        function = "mcserver@delMCCmd",
+        description = "删MC服务器指令",
+        mode = "MC服务器"
+    )
         ]
     
     def CheckAndGetSettings(self):
@@ -329,7 +315,7 @@ class mcserver(PBF):
             
             commandList = self.mysql.selectx("SELECT * FROM `botMccmd` WHERE `qn`=%s", (self.data.se.get("group_id")))
             for i in commandList:
-                name = i.get("name")
+        name = i.get("name")
                 cmd = i.get("cmd")
                 if self.data.message[0:len(name)] == name:
                     # 执行指令
