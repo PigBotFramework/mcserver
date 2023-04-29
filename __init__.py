@@ -19,90 +19,6 @@ _author = "xzyStudio"
 _cost = 0.00
 
 class mcserver(PBF):
-    def __enter__(self):
-        return [
-    @RegCmd(
-        name = "/",
-        usage = "/<指令内容>",
-        permission = "ao",
-        function = "mcserver@command",
-        description = "在服务器里执行指令",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "服务器状态",
-        usage = "服务器状态",
-        permission = "anyone",
-        function = "mcserver@state",
-        description = "服务器状态",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "启动服务器",
-        usage = "启动服务器",
-        permission = "ao",
-        function = "mcserver@start",
-        description = "开启服务器",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "关闭服务器",
-        usage = "关闭服务器",
-        permission = "ao",
-        function = "mcserver@stop",
-        description = "关闭服务器",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "面板数据",
-        usage = "面板数据",
-        permission = "ao",
-        function = "mcserver@overview",
-        description = "MCSM面板数据",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "获取状态 ",
-        usage = "获取状态 <IP>:<端口>",
-        permission = "anyone",
-        function = "mcserver@getStatus",
-        description = "获取指定服务器的状态",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "MC服务器消息同步",
-        usage = "",
-        permission = "anyone",
-        function = "mcserver@syncMessage",
-        description = "MC服务器消息同步",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "加MC服务器指令",
-        usage = "加MC服务器指令",
-        permission = "ao",
-        function = "mcserver@addMCCmd",
-        description = "加MC服务器指令",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "MC服务器指令",
-        usage = "MC服务器指令",
-        permission = "ao",
-        function = "mcserver@listMCCmd",
-        description = "列出所有MC服务器指令",
-        mode = "MC服务器"
-    )
-    @RegCmd(
-        name = "删MC服务器指令",
-        usage = "删MC服务器指令 <群中指令名>",
-        permission = "ao",
-        function = "mcserver@delMCCmd",
-        description = "删MC服务器指令",
-        mode = "MC服务器"
-    )
-        ]
-    
     def CheckAndGetSettings(self):
         setting = self.data.groupSettings
         if setting.get('MCSMApi') and setting.get('MCSMUuid') and setting.get('MCSMKey') and setting.get('MCSMRemote'):
@@ -145,6 +61,13 @@ class mcserver(PBF):
                 return "%.2f%s" % (value, units[i])
             value = value / size
     
+    @RegCmd(
+        name = "服务器状态",
+        usage = "服务器状态",
+        permission = "anyone",
+        description = "服务器状态",
+        mode = "MC服务器"
+    )
     def state(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -164,6 +87,13 @@ class mcserver(PBF):
             data = '[CQ:face,id=151] 执行失败！\n原因：'+datajson.get('data')
         self.client.msg().raw(data)
     
+    @RegCmd(
+        name = "关闭服务器",
+        usage = "关闭服务器",
+        permission = "ao",
+        description = "关闭服务器",
+        mode = "MC服务器"
+    )
     def stop(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -185,6 +115,13 @@ class mcserver(PBF):
             data = '[CQ:face,id=151] 执行失败！\n原因：'+datajson.get('data')
         self.client.msg().raw(data)
     
+    @RegCmd(
+        name = "启动服务器",
+        usage = "启动服务器",
+        permission = "ao",
+        description = "开启服务器",
+        mode = "MC服务器"
+    )
     def start(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -202,7 +139,13 @@ class mcserver(PBF):
             data = '[CQ:face,id=151] 执行失败！\n原因：'+datajson.get('data')
         self.client.msg().raw(data)
     
-    
+    @RegCmd(
+        name = "面板数据",
+        usage = "面板数据",
+        permission = "ao",
+        description = "MCSM面板数据",
+        mode = "MC服务器"
+    )
     def overview(self):
         try:
             uid = self.data.se.get('user_id')
@@ -223,7 +166,13 @@ class mcserver(PBF):
         except Exception as e:
             self.client.msg().raw("[CQ:face,id=189] 获取数据出错，请检查MCSMApi是否正确")
         
-    
+    @RegCmd(
+        name = "/",
+        usage = "/<指令内容>",
+        permission = "ao",
+        description = "在服务器里执行指令",
+        mode = "MC服务器"
+    )
     def command(self, iff=True):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -271,7 +220,14 @@ class mcserver(PBF):
         
         dataa = requests.get(url='{0}/api/instance?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting.get('MCSMApi'), setting.get('MCSMUuid'), setting.get('MCSMRemote'), setting.get('MCSMKey')))
         datajson = dataa.json()
-        
+    
+    @RegCmd(
+        name = "获取状态 ",
+        usage = "获取状态 <IP>:<端口>",
+        permission = "anyone",
+        description = "获取指定服务器的状态",
+        mode = "MC服务器"
+    )
     def getStatus(self):
         ip = self.data.message.split(':')
         port = 25565 if ':' not in self.data.message else ip[1]
@@ -299,7 +255,15 @@ class mcserver(PBF):
                 Statement('reply', id=self.data.se.get('message_id')),
                 FaceStatement(54), TextStatement('获取失败！')
             ).send()
-        
+    
+    @RegCmd(
+        name = "MC服务器消息同步",
+        usage = "",
+        permission = "anyone",
+        description = "MC服务器消息同步",
+        mode = "MC服务器",
+        type = "message"
+    )
     def syncMessage(self):
         # MC消息同步
         try:
@@ -358,6 +322,13 @@ class mcserver(PBF):
         except Exception as e:
             self.client.msg().raw(traceback.format_exc())
     
+    @RegCmd(
+        name = "加MC服务器指令",
+        usage = "加MC服务器指令",
+        permission = "ao",
+        description = "加MC服务器指令",
+        mode = "MC服务器"
+    )
     def addMCCmd(self):
         uid = self.data.se.get('user_id')
         gid = self.data.se.get('group_id')
@@ -382,6 +353,13 @@ class mcserver(PBF):
             self.mysql.commonx('INSERT INTO `botMccmd` (`name`, `cmd`, `qn`) VALUES (%s, %s, %s);', (args.get("name"), message, gid))
             self.client.msg().raw('添加成功！')
     
+    @RegCmd(
+        name = "MC服务器指令",
+        usage = "MC服务器指令",
+        permission = "ao",
+        description = "列出所有MC服务器指令",
+        mode = "MC服务器"
+    )
     def listMCCmd(self):
         arr = []
         commandList = self.mysql.selectx("SELECT * FROM `botMccmd` WHERE `qn`=%s", (self.data.se.get("group_id")))
@@ -389,6 +367,13 @@ class mcserver(PBF):
             arr.append({"type": "node", "data": {"name": self.data.botSettings.get("name"), "uin": self.data.botSettings.get("myselfqn"), "content": "{} => {}".format(i.get("name"), i.get("cmd"))}})
         self.client.CallApi("send_group_forward_msg", {"group_id":self.data.se.get("group_id"), "messages":arr})
     
+    @RegCmd(
+        name = "删MC服务器指令",
+        usage = "删MC服务器指令 <群中指令名>",
+        permission = "ao",
+        description = "删MC服务器指令",
+        mode = "MC服务器"
+    )
     def delMCCmd(self):
         self.mysql.commonx("DELETE FROM `botMccmd` WHERE `qn`=%s AND `name`=%s", (self.data.se.get("group_id"), self.data.message))
         self.client.msg().raw("face54 删除成功！")
