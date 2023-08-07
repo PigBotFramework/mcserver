@@ -30,14 +30,14 @@ _cost = 0.00
 class mcserver(PBF):
     def CheckAndGetSettings(self):
         setting = self.data.groupSettings
-        if setting.get('MCSMApi') and setting.get('MCSMUuid') and setting.get('MCSMKey') and setting.get('MCSMRemote'):
+        if setting._get('MCSMApi') and setting._get('MCSMUuid') and setting._get('MCSMKey') and setting._get('MCSMRemote'):
             return setting
         else:
             return 404
 
     def CheckAndGetSettingsSocket(self):
         setting = self.data.groupSettings
-        if len(setting.get("client_id").strip()) != 0 and len(setting.get("client_secret").strip()) != 0:
+        if len(setting._get("client_id").strip()) != 0 and len(setting._get("client_secret").strip()) != 0:
             return setting
         else:
             return 404
@@ -46,8 +46,8 @@ class mcserver(PBF):
         setting = self.CheckAndGetSettingsSocket()
         if setting == 404:
             return False
-        client_id = setting.get("client_id")
-        client_secret = setting.get("client_secret")
+        client_id = setting._get("client_id")
+        client_secret = setting._get("client_secret")
         params = {
             "type": type,
             "data": data,
@@ -87,11 +87,11 @@ class mcserver(PBF):
 
         statusList = ["状态未知", "已停止", "正在停止", "正在启动", "正在运行"]
 
-        dataa = requests.get(url='{0}/api/instance?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting.get('MCSMApi'),
-                                                                                               setting.get('MCSMUuid'),
-                                                                                               setting.get(
+        dataa = requests.get(url='{0}/api/instance?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting._get('MCSMApi'),
+                                                                                               setting._get('MCSMUuid'),
+                                                                                               setting._get(
                                                                                                    'MCSMRemote'),
-                                                                                               setting.get('MCSMKey')))
+                                                                                               setting._get('MCSMKey')))
         datajson = dataa.json()
 
         if datajson['status'] == 200:
@@ -126,10 +126,10 @@ class mcserver(PBF):
             return
 
         dataa = requests.get(
-            url='{0}/api/protected_instance/stop?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting.get('MCSMApi'),
-                                                                                             setting.get('MCSMUuid'),
-                                                                                             setting.get('MCSMRemote'),
-                                                                                             setting.get('MCSMKey')))
+            url='{0}/api/protected_instance/stop?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting._get('MCSMApi'),
+                                                                                             setting._get('MCSMUuid'),
+                                                                                             setting._get('MCSMRemote'),
+                                                                                             setting._get('MCSMKey')))
         datajson = dataa.json()
         if datajson['status'] == 200:
             data = '[CQ:face,id=54] 执行成功！\n执行的实例：' + datajson['data']['instanceUuid']
@@ -151,10 +151,10 @@ class mcserver(PBF):
             return
 
         dataa = requests.get(
-            url='{0}/api/protected_instance/open?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting.get('MCSMApi'),
-                                                                                             setting.get('MCSMUuid'),
-                                                                                             setting.get('MCSMRemote'),
-                                                                                             setting.get('MCSMKey')))
+            url='{0}/api/protected_instance/open?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting._get('MCSMApi'),
+                                                                                             setting._get('MCSMUuid'),
+                                                                                             setting._get('MCSMRemote'),
+                                                                                             setting._get('MCSMKey')))
         datajson = dataa.json()
 
         if datajson['status'] == 200:
@@ -178,7 +178,7 @@ class mcserver(PBF):
                 return
 
             dataa = requests.get(
-                url='{0}/api/overview?apikey={1}'.format(setting.get('MCSMApi'), setting.get('MCSMKey')))
+                url='{0}/api/overview?apikey={1}'.format(setting._get('MCSMApi'), setting._get('MCSMKey')))
             datajson = dataa.json()
             if datajson.get('status') == 200:
                 data = '[CQ:face,id=54] 面板状态：正常\n[CQ:face,id=54] 面板版本：' + datajson.get('data').get(
@@ -230,7 +230,7 @@ class mcserver(PBF):
 
         dataa = requests.get(
             url='{0}/api/protected_instance/command?uuid={1}&remote_uuid={2}&apikey={3}&command={4}'.format(
-                setting.get('MCSMApi'), setting.get('MCSMUuid'), setting.get('MCSMRemote'), setting.get('MCSMKey'),
+                setting._get('MCSMApi'), setting._get('MCSMUuid'), setting._get('MCSMRemote'), setting._get('MCSMKey'),
                 message1))
         datajson = dataa.json()
         if datajson['status'] == 200:
@@ -240,8 +240,8 @@ class mcserver(PBF):
         if iff:
             self.client.msg().raw(data)
             dataa = requests.get(url='{0}/api/protected_instance/outputlog?uuid={1}&remote_uuid={2}&apikey={3}'.format(
-                setting.get('MCSMApi'), setting.get('MCSMUuid'), setting.get('MCSMRemote'),
-                setting.get('MCSMKey'))).json().get("data")
+                setting._get('MCSMApi'), setting._get('MCSMUuid'), setting._get('MCSMRemote'),
+                setting._get('MCSMKey'))).json().get("data")
             data = dataa.split("\r\n")[-2]
             data = re.sub(r'\[0;([0-9]+);([0-9]+)m', "", data)
             data = re.sub(r'\[m', "", data)
@@ -256,11 +256,11 @@ class mcserver(PBF):
             self.client.msg().raw('请先绑定服务器！\n绑定教程见作者B站：xzystudio1')
             return
 
-        dataa = requests.get(url='{0}/api/instance?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting.get('MCSMApi'),
-                                                                                               setting.get('MCSMUuid'),
-                                                                                               setting.get(
+        dataa = requests.get(url='{0}/api/instance?uuid={1}&remote_uuid={2}&apikey={3}'.format(setting._get('MCSMApi'),
+                                                                                               setting._get('MCSMUuid'),
+                                                                                               setting._get(
                                                                                                    'MCSMRemote'),
-                                                                                               setting.get('MCSMKey')))
+                                                                                               setting._get('MCSMKey')))
         datajson = dataa.json()
 
     @RegCmd(
@@ -413,7 +413,7 @@ class mcserver(PBF):
         commandList = MCCmdModel()._get(qn=self.data.se.get("group_id"))
         for i in commandList:
             arr.append({"type": "node",
-                        "data": {"name": self.data.botSettings.get("name"), "uin": self.data.botSettings.get("myselfqn"),
+                        "data": {"name": self.data.botSettings._get("name"), "uin": self.data.botSettings._get("myselfqn"),
                                  "content": "{} => {}".format(i.get("name"), i.get("cmd"))}})
         self.client.CallApi("send_group_forward_msg", {"group_id": self.data.se.get("group_id"), "messages": arr})
 
