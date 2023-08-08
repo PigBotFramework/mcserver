@@ -10,7 +10,7 @@ try:
 except ImportError:
     import pip
 
-    pip.main(['install', "websocket-client"])
+    pip.main(['install', "websocket"])
     import websocket
 from pbf.controller.PBF import PBF
 from pbf.statement.FaceStatement import FaceStatement
@@ -56,7 +56,9 @@ class mcserver(PBF):
             "flag": "flag"
         }
         self.logger.debug(params)
+        self.logger.debug(websocket.__doc__)
         ws = websocket.WebSocket()
+        self.logger.debug(dir(ws))
         ws.connect("wss://socket.xzynb.top/ws")
         ws.send(json.dumps(params))
         ws.close()
