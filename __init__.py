@@ -55,7 +55,6 @@ class mcserver(PBF):
             "client_secret": client_secret,
             "flag": "flag"
         }
-        self.logger.debug(params)
         ws = websocket.WebSocket()
         ws.connect("wss://socket.xzynb.top/ws")
         ws.send(json.dumps(params))
@@ -244,10 +243,8 @@ class mcserver(PBF):
                 setting._get('MCSMApi'), setting._get('MCSMUuid'), setting._get('MCSMRemote'),
                 setting._get('MCSMKey'))).json().get("data")
             data = dataa.split("\r\n")[-2]
-            data = re.sub(r'\[0;([0-9]+);([0-9]+)m', "", data)
-            data = re.sub(r'\[m', "", data)
-            data = re.sub(r'>\[2K\r', "", data)
-            data = re.sub(r'\[([0-9]+):([0-9]+):([0-9]+)\] \[Server thread/INFO\]: ', "", data)
+            data = re.sub(r'\x1b(\[.*?[@-~]|\].*?(\x07|\x1b\\))', "", data)
+            data = re.sub(r'\[([0-9]+):([0-9]+):([0-9]+)\] \[Server thread/(.*)\]: ', "", data)
             data = f"[CQ:reply,id={self.data.se.get('message_id')}] [CQ:face,id=54] 服务器返回：{data}"
             self.client.msg().raw(data)
 
@@ -312,10 +309,9 @@ class mcserver(PBF):
         # MC消息同步
         try:
             if self.data.groupSettings:
-                if int(self.data.groupSettings._get('messageSync')):
-                    message = str(self.data.message)
-                    self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + str(
-                        self.data.message)
+                if int(self.data.groupSettings._get('messageSync')) and str(self.data.message)[0:1] == '#':
+                    message = str(self.data.message).lstrip('#')
+                    self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + message
                     if self.command(False) == False:
                         if random.randint(1, 5) == 3:
                             self.client.msg().raw("提示：关闭消息同步请发送： set messageSync===0")
