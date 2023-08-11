@@ -234,7 +234,7 @@ class mcserver(PBF):
                 message1))
         datajson = dataa.json()
         if datajson['status'] == 200:
-            data = '[CQ:face,id=54] 执行成功！\n执行的实例：' + datajson['data']['instanceUuid']
+            data = '[CQ:face,id=54] 执行成功！'
         else:
             data = '[CQ:face,id=151] 执行失败！\n原因：' + datajson.get('data')
         if iff:
@@ -244,8 +244,8 @@ class mcserver(PBF):
                 setting._get('MCSMKey'))).json().get("data")
             data = dataa.split("\r\n")[-2]
             data = re.sub(r'\x1b(\[.*?[@-~]|\].*?(\x07|\x1b\\))', "", data)
-            data = re.sub(r'\[([0-9]+):([0-9]+):([0-9]+)\] \[Server thread/(.*)\]: ', "", data)
-            data = f"[CQ:reply,id={self.data.se.get('message_id')}] [CQ:face,id=54] 服务器返回：{data}"
+            data = re.sub(r'\[([0-9]+):([0-9]+):([0-9]+)\] \[(.*)/(.*)\]: ', "", data)
+            data = f"[CQ:reply,id={self.data.se.get('message_id')}]{data}"
             self.client.msg().raw(data)
 
     def MCSMAddUser(self):
@@ -259,7 +259,6 @@ class mcserver(PBF):
                                                                                                setting._get(
                                                                                                    'MCSMRemote'),
                                                                                                setting._get('MCSMKey')))
-        datajson = dataa.json()
 
     @RegCmd(
         name="获取状态 ",
@@ -339,10 +338,7 @@ class mcserver(PBF):
                             pass
 
                     self.data.message = cmd
-                    if self.command(False) == False:
-                        self.client.msg().raw(f"[CQ:reply,id={self.data.se.get('message_id')}]执行失败")
-                    else:
-                        self.client.msg().raw(f"[CQ:reply,id={self.data.se.get('message_id')}]执行成功！")
+                    self.command()
 
         except Exception as e:
             pass
