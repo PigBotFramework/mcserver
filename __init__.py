@@ -228,15 +228,19 @@ class mcserver(PBF):
         # message1 = temp_unicode.encode('gbk')
         # self.CrashReport(message1, uuid=123456789)
 
-        dataa = requests.get(
-            url='{0}/api/protected_instance/command?uuid={1}&remote_uuid={2}&apikey={3}&command={4}'.format(
-                setting._get('MCSMApi'), setting._get('MCSMUuid'), setting._get('MCSMRemote'), setting._get('MCSMKey'),
-                message1))
-        datajson = dataa.json()
-        if datajson['status'] == 200:
-            data = '[CQ:face,id=54] 执行成功！'
-        else:
-            data = '[CQ:face,id=151] 执行失败！\n原因：' + datajson.get('data')
+        try:
+            dataa = requests.get(
+                url='{0}/api/protected_instance/command?uuid={1}&remote_uuid={2}&apikey={3}&command={4}'.format(
+                    setting._get('MCSMApi'), setting._get('MCSMUuid'), setting._get('MCSMRemote'), setting._get('MCSMKey'),
+                    message1))
+            datajson = dataa.json()
+            if datajson['status'] == 200:
+                data = '[CQ:face,id=54] 执行成功！'
+            else:
+                data = '[CQ:face,id=151] 执行失败！\n原因：' + datajson.get('data')
+        except Exception as e:
+            self.logger.warn(e, 'mcserver@command')
+            data = f'[CQ:face,id=151] 执行失败！可能是MCSM面板不在线！'
         if iff:
             self.client.msg().raw(data)
             dataa = requests.get(url='{0}/api/protected_instance/outputlog?uuid={1}&remote_uuid={2}&apikey={3}'.format(
@@ -297,6 +301,18 @@ class mcserver(PBF):
             ).send()
 
     @RegCmd(
+        name="#",
+        usage="#<message>",
+        permission="anyone",
+        description="同步服务器消息",
+        mode="MC服务器",
+        hidden=1
+    )
+    def sharpSync(self):
+        self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + self.data.message.lstrip('#')
+        self.command(False)
+
+    @RegCmd(
         name="MC服务器消息同步",
         usage="",
         permission="anyone",
@@ -308,8 +324,8 @@ class mcserver(PBF):
         # MC消息同步
         try:
             if self.data.groupSettings:
-                if int(self.data.groupSettings._get('messageSync')) and str(self.data.message)[0:1] == '#':
-                    message = str(self.data.message).lstrip('#')
+                if int(self.data.groupSettings._get('messageSync')) and str(self.data.message)[0:1] != '#':
+                    message = self.data.message
                     self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + message
                     if self.command(False) == False:
                         if random.randint(1, 5) == 3:
