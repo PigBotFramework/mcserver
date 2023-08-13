@@ -309,8 +309,42 @@ class mcserver(PBF):
         hidden=1
     )
     def sharpSync(self):
-        self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + self.data.message.lstrip('#')
+        self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + self.parseMessage(self.data.message.lstrip('#'))
         self.command(False)
+    
+    def parseMessage(self, message):
+        regexList = [
+            [r"\[CQ:reply(.*?)\]", ""],
+            [r"\[CQ:forward(.*?)\]", ""],
+            [r"\[CQ:image(.*?),url=(.*?)\]", "[图片$1]", "url=(.*?)"],
+            [r"\[CQ:face(.*?),id=(.*?)\]", r"[表情$1]", "id=(.*?)"],
+            [r"\[CQ:record(.*?),url=(.*?)\]", r"[音频]"],
+            [r"\[CQ:at,qq=(.*?)\]", r"@$1", r"qq=(\d+)"]
+        ]
+
+        for i in regexList:
+            if "$" in i[1]:
+                flag = True
+                for l in i[1].split("$"):
+                    self.logger.debug("Asz")
+                    if flag:
+                        flag = False
+                        continue
+                    num = int(l[0:1])
+                    print(i[num+1])
+                    pattern = re.compile(i[num+1], re.I)
+                    m = pattern.match(message)
+                    if m == None:
+                        print(m, message, i[num+1])
+                        continue
+                    self.logger.debug(re.sub("(.*?)=", "", m.group(0)))
+                    self.logger.debug(num)
+                    self.logger.debug(m.group(0))
+                    i[1] = i[1].replace(f"${num}", re.sub("(.*?)=", "", m.group(0)))
+            
+            message = re.sub(i[0], i[1], message)
+
+        return message
 
     @RegCmd(
         name="MC服务器消息同步",
@@ -326,7 +360,7 @@ class mcserver(PBF):
             if self.data.groupSettings:
                 if int(self.data.groupSettings._get('messageSync')) and str(self.data.message)[0:1] != '#':
                     message = self.data.message
-                    self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + message
+                    self.data.message = 'say <' + str(self.data.se.get('sender').get('nickname')) + '> ' + self.parseMessage(message)
                     if self.command(False) == False:
                         if random.randint(1, 5) == 3:
                             self.client.msg().raw("提示：关闭消息同步请发送： set messageSync===0")
